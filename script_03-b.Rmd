@@ -40,8 +40,8 @@ sep_new <-
   select( -instructor_full_name, -course_section_code, -(grad:total)) %>%
   rename_with(~ str_replace(.x, "course_", "")) %>% 
   group_by(id, title, name, department) %>% 
-  summarize(u_grad = sum(u_grad), .groups = "drop") %>% 
-  filter(u_grad > 10)
+  summarize(u_grad2 = sum(u_grad), .groups = "drop") %>% 
+  filter(u_grad2 > 10)
 ```
 
 ### Scene 1
@@ -49,12 +49,59 @@ sep_new <-
 **Prompt:** Which classes had the biggest increases and decreases in undergraduate enrollments between September 1 and September 22? Obviously, you will need to join the two datasets which I have created for you above.
 
 a) Make a table using **gt** which shows the five courses with the biggest increase. Use the [How to make a table](https://davidkane9.github.io/PPBDS/tools.html#how-to-make-a-table) section of *The Primer*.
+```{r}
+top <-
+  inner_join(sep_new, sep_old, by = c("id", "title", "name", "department")) %>%
+  mutate(difference = u_grad2 - u_grad) %>%
+  arrange(desc(difference)) %>%
+  slice(1:5) %>%
+  gt() %>%
+  tab_header(title = "Courses with the Largest Increase in Enrollment")
+
+top
+
+```
+
 
 b) Make a table using **gt** which shows the five courses with the biggest decrease.
 
+```{r}
+bottom <-
+  inner_join(sep_new, sep_old, by = c("id", "title", "name", "department")) %>%
+  mutate(difference = u_grad2 - u_grad) %>%
+  arrange(desc(difference)) %>%
+  slice(412:416) %>%
+  gt() %>%
+  tab_header(title = "Courses with the Largest Decrease in Enrollment")
+
+bottom
+
+
+```
+
+
 c) Make a nice looking graphic which shows these 10 courses.
+```{r}
+sep <-
+  inner_join(sep_new, sep_old) %>%
+  mutate(difference = u_grad2 - u_grad) %>%
+  arrange(desc(difference)) %>%
+   slice(1:5, 412:416) %>%
+  ggplot(aes(x  = fct_reorder(title, difference), y = difference, fill = department)) +
+  geom_col() +
+  labs(x = "Course Title", y = "Increase or Decrease in Enrollment",
+       title = "Increase or Decrease in Enrollment by Course and
+       Department")
+sep
+
+
+```
 
 d) Write down some thoughts about what might explain these increases and decreases. Or is it all just random? How would we know?
+```{r}
+# Amount of course work and required time commitment to a course may influence
+# a student to drop class.  
+```
 
 See [here](https://rpubs.com/dkane/week-3) for my answers. No need to copy exactly what I have done! Make yours better.
 
@@ -64,9 +111,27 @@ See [here](https://rpubs.com/dkane/week-3) for my answers. No need to copy exact
 
 **Prompt:** Dean Amanda Claybaugh is worried that the amount of work that some classes assigned in the first few weeks of class. Describe an ideal Preceptor Table with no missing data which would allow us to investigate this situation. What data is missing and why? 
 
+```{r}
+# An ideal Preceptor Table would allow us to determine that courses that are 
+# dropped are assigning too much work in the first weeks. Missing data consists
+# of reasons why the courses were dropped. To have an ideal table we are 
+# assuming course are dropped dues to the amount of work. 
+```
+
+
 With our actual Preceptor Table, how might we investigate the effect of work assigned in the first two weeks? Would the estimated Average Treatment Effect be accurate? Why or why not?
+```{r}
+# Classes with a lot of work would be considered treated, classes with les are
+# control. Outcome is increase or decrease in enrollment. It would not be 
+# accurate because many factors influence dropping/adding a course, not just 
+# course load. 
+```
+
 
 Make a spreadsheet --- I recommend using Google sheets, but anything will do --- which shows a simple version of that actual Preceptor Table. What are the units? What are the outcomes? What is the treatment? What is the causal effect? You may assign whichever of the 10 classes you like to treatment and the rest to control.
+```{r}
+```
+
 
 ## Scene 3
 
